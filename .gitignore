@@ -1,0 +1,4 @@
+# Filesystem metadata
+.directory
+.DS_Store
+Thumbs.db
