@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Two arrows switching directions">
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="#315efb"/>
+  <g fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 46h66M82 32l14 14-14 14"/>
+    <path d="M98 82H32M46 68 32 82l14 14"/>
+  </g>
+</svg>
