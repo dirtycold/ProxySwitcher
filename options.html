@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Proxy Switcher settings</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main class="settings-card">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Proxy Switcher</p>
+          <h1>Connection settings</h1>
+        </div>
+        <div id="stateBadge" class="state-badge state-checking" role="status" aria-live="polite">
+          <span class="state-dot" aria-hidden="true"></span>
+          <span id="stateLabel">Checking…</span>
+        </div>
+      </header>
+
+      <p id="stateDescription" class="state-description">
+        Reading Chrome’s current proxy setting.
+      </p>
+
+      <form id="settingsForm">
+        <fieldset>
+          <legend>HTTP proxy</legend>
+          <p class="field-help">Chrome tries this proxy first.</p>
+          <div class="field-row">
+            <label class="host-field" for="httpHost">
+              Host
+              <input
+                id="httpHost"
+                name="httpHost"
+                type="text"
+                required
+                autocomplete="off"
+                autocapitalize="none"
+                spellcheck="false"
+                placeholder="127.0.0.1"
+              >
+            </label>
+            <label class="port-field" for="httpPort">
+              Port
+              <input
+                id="httpPort"
+                name="httpPort"
+                type="number"
+                required
+                min="1"
+                max="65535"
+                inputmode="numeric"
+                placeholder="1080"
+              >
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>SOCKS5 fallback</legend>
+          <p class="field-help">Used when Chrome cannot connect to the HTTP proxy.</p>
+          <div class="field-row">
+            <label class="host-field" for="socks5Host">
+              Host
+              <input
+                id="socks5Host"
+                name="socks5Host"
+                type="text"
+                required
+                autocomplete="off"
+                autocapitalize="none"
+                spellcheck="false"
+                placeholder="127.0.0.1"
+              >
+            </label>
+            <label class="port-field" for="socks5Port">
+              Port
+              <input
+                id="socks5Port"
+                name="socks5Port"
+                type="number"
+                required
+                min="1"
+                max="65535"
+                inputmode="numeric"
+                placeholder="1080"
+              >
+            </label>
+          </div>
+        </fieldset>
+
+        <footer class="form-footer">
+          <p id="saveStatus" class="save-status" role="status" aria-live="polite"></p>
+          <button id="saveButton" type="submit">Save settings</button>
+        </footer>
+      </form>
+
+      <p class="usage-note">
+        Click the toolbar icon to switch modes. Right-click it to return to these settings.
+      </p>
+    </main>
+
+    <script src="options.js"></script>
+  </body>
+</html>

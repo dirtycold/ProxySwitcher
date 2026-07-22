@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Proxy Switcher",
-  "version": "1.0.0",
-  "description": "Switch between the system proxy and one predefined proxy.",
-  "permissions": ["proxy"],
+  "version": "1.1.0",
+  "description": "Switch between the system proxy and a configurable HTTP-to-SOCKS5 proxy chain.",
+  "permissions": ["proxy", "storage"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_title": "Switch proxy"
-  }
+  },
+  "options_page": "options.html"
 }
