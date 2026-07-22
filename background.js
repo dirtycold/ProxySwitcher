@@ -360,11 +360,19 @@ function runAndReport(operation) {
   });
 }
 
-let toggleQueue = Promise.resolve();
+let operationQueue = Promise.resolve();
+
+function enqueueOperation(operation) {
+  const result = operationQueue.then(operation);
+
+  // A failed operation must not prevent later state changes from running.
+  operationQueue = result.catch(() => undefined);
+
+  return result;
+}
 
 chrome.action.onClicked.addListener(() => {
-  toggleQueue = toggleQueue
-    .then(toggleProxy)
+  enqueueOperation(toggleProxy)
     .catch((error) => {
       console.error(error);
       updateIndicator({ kind: "error" });
@@ -380,7 +388,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message?.type === "saveSettings") {
-    saveSettings(message.settings)
+    enqueueOperation(() => saveSettings(message.settings))
       .then((snapshot) => sendResponse({ ok: true, snapshot }))
       .catch((error) => sendResponse({ ok: false, error: serializeError(error) }));
     return true;
