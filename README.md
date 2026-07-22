@@ -32,3 +32,7 @@ considers bad. Plain hostnames and Chrome's implicit loopback exceptions connect
 directly. No `DIRECT` fallback is provided for other traffic.
 
 SOCKS5 authentication is not supported by Chrome's proxy stack, so the settings contain host and port fields only.
+
+## License
+
+This project is released into the public domain under the [Unlicense](UNLICENSE).
