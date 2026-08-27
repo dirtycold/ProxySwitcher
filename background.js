@@ -11,7 +11,8 @@ const DEFAULT_SETTINGS = {
   socks5: {
     host: "127.0.0.1",
     port: 1080
-  }
+  },
+  bypass: ["localhost", "127.0.0.1", "::1", ".local"]
 };
 
 const INDICATORS = {
@@ -53,7 +54,8 @@ class SettingsError extends Error {
 function cloneDefaultSettings() {
   return {
     http: { ...DEFAULT_SETTINGS.http },
-    socks5: { ...DEFAULT_SETTINGS.socks5 }
+    socks5: { ...DEFAULT_SETTINGS.socks5 },
+    bypass: [...DEFAULT_SETTINGS.bypass]
   };
 }
 
@@ -123,6 +125,64 @@ function normalizePort(value, field) {
   return port;
 }
 
+function normalizeBypassRule(value) {
+  if (typeof value !== "string") {
+    throw new SettingsError(
+      "noProxy",
+      "Enter a comma-separated list of hosts or domain suffixes."
+    );
+  }
+
+  let rule = value.trim().toLowerCase();
+  if (!rule) {
+    return null;
+  }
+
+  if (rule === "*") {
+    return rule;
+  }
+
+  const isDomainSuffix = rule.startsWith(".");
+  if (isDomainSuffix) {
+    rule = rule.slice(1);
+  }
+
+  try {
+    const host = normalizeHost(rule, "noProxy");
+    return isDomainSuffix ? `.${host}` : host;
+  } catch (error) {
+    if (error instanceof SettingsError) {
+      throw new SettingsError(
+        "noProxy",
+        `Invalid no-proxy rule “${value.trim()}”. Use a host, IP address, leading-dot domain suffix, or *.`
+      );
+    }
+
+    throw error;
+  }
+}
+
+function normalizeBypassList(value) {
+  const entries = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(",")
+      : null;
+
+  if (entries === null) {
+    throw new SettingsError(
+      "noProxy",
+      "Enter a comma-separated list of hosts or domain suffixes."
+    );
+  }
+
+  const normalized = entries
+    .map(normalizeBypassRule)
+    .filter((rule) => rule !== null);
+
+  return [...new Set(normalized)];
+}
+
 function validateSettings(value) {
   const candidate = value && typeof value === "object" ? value : {};
   const http = candidate.http && typeof candidate.http === "object"
@@ -140,7 +200,8 @@ function validateSettings(value) {
     socks5: {
       host: normalizeHost(socks5.host, "socks5Host"),
       port: normalizePort(socks5.port, "socks5Port")
-    }
+    },
+    bypass: normalizeBypassList(candidate.bypass)
   };
 }
 
@@ -155,7 +216,10 @@ function mergeWithDefaults(value) {
     socks5: {
       ...DEFAULT_SETTINGS.socks5,
       ...(candidate.socks5 && typeof candidate.socks5 === "object" ? candidate.socks5 : {})
-    }
+    },
+    bypass: candidate.bypass === undefined
+      ? [...DEFAULT_SETTINGS.bypass]
+      : candidate.bypass
   };
 }
 
@@ -169,8 +233,22 @@ function buildProxyConfig(settings) {
   const proxyChain = `PROXY ${httpEndpoint}; SOCKS5 ${socks5Endpoint}`;
   const pacScript = `${PAC_MARKER}
 function FindProxyForURL(url, host) {
-  if (isPlainHostName(host)) {
-    return "DIRECT";
+  var normalizedHost = host.toLowerCase();
+  var bypassRules = ${JSON.stringify(settings.bypass)};
+
+  for (var index = 0; index < bypassRules.length; index += 1) {
+    var rule = bypassRules[index];
+    var isDomainSuffix = rule.charAt(0) === ".";
+
+    if (
+      rule === "*" ||
+      (!isDomainSuffix && normalizedHost === rule) ||
+      (isDomainSuffix &&
+        normalizedHost.length > rule.length &&
+        normalizedHost.slice(-rule.length) === rule)
+    ) {
+      return "DIRECT";
+    }
   }
 
   return ${JSON.stringify(proxyChain)};
@@ -307,6 +385,18 @@ async function synchronizeIndicator(details) {
   updateIndicator(classifyProxyState(currentDetails));
 }
 
+async function initializeExtension() {
+  const settings = await getStoredSettings();
+  await storeSettings(settings);
+
+  const details = await getProxyDetails();
+  if (classifyProxyState(details).kind === "proxy") {
+    await setProxyValue(buildProxyConfig(settings));
+  }
+
+  await synchronizeIndicator();
+}
+
 async function toggleProxy() {
   const details = await getProxyDetails();
   const state = classifyProxyState(details);
@@ -398,7 +488,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  runAndReport(synchronizeIndicator);
+  runAndReport(() => enqueueOperation(initializeExtension));
 });
 
 chrome.runtime.onStartup.addListener(() => {

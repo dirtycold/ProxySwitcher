@@ -90,6 +90,27 @@
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend>No proxy</legend>
+          <p id="noProxyHelp" class="field-help">
+            Comma-separated hosts or IP addresses. A leading dot matches
+            subdomains; * bypasses everything.
+          </p>
+          <label for="noProxy">
+            Bypass rules
+            <input
+              id="noProxy"
+              name="noProxy"
+              type="text"
+              aria-describedby="noProxyHelp"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+              placeholder="localhost,127.0.0.1,::1,.local"
+            >
+          </label>
+        </fieldset>
+
         <footer class="form-footer">
           <p id="saveStatus" class="save-status" role="status" aria-live="polite"></p>
           <button id="saveButton" type="submit">Save settings</button>

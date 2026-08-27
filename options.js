@@ -30,7 +30,8 @@ const fields = {
   httpHost: document.querySelector("#httpHost"),
   httpPort: document.querySelector("#httpPort"),
   socks5Host: document.querySelector("#socks5Host"),
-  socks5Port: document.querySelector("#socks5Port")
+  socks5Port: document.querySelector("#socks5Port"),
+  noProxy: document.querySelector("#noProxy")
 };
 
 function sendMessage(message) {
@@ -58,6 +59,7 @@ function renderSettings(settings) {
   fields.httpPort.value = String(settings.http.port);
   fields.socks5Host.value = settings.socks5.host;
   fields.socks5Port.value = String(settings.socks5.port);
+  fields.noProxy.value = settings.bypass.join(",");
 }
 
 function renderState(state) {
@@ -99,7 +101,8 @@ function readSettings() {
     socks5: {
       host: fields.socks5Host.value,
       port: fields.socks5Port.value
-    }
+    },
+    bypass: fields.noProxy.value
   };
 }
 
